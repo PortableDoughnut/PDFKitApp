@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PDFKit
 
 struct ContentView: View {
 	@State private var characterName = "Hero"
@@ -39,7 +40,7 @@ struct ContentView: View {
 			}
 			
 			Button("Generate PDF") {
-					// pdfURL = generatePDF()
+					 pdfURL = generatePDF()
 			}
 			.padding()
 			.disabled(pointsRemaining != 0)
@@ -73,6 +74,33 @@ struct ContentView: View {
 			case 14: return 7
 			case 15: return 9
 			default: return 0
+		}
+	}
+	
+	func generatePDF() -> URL? {
+		let pdfDocument = PDFDocument()
+		let pdfPage = PDFPage(image: drawCharacterSheet())
+		pdfDocument.insert(pdfPage!, at: 0)
+		
+		let url = FileManager.default.temporaryDirectory.appendingPathComponent("CharacterSheet.pdf")
+		if let data = pdfDocument.dataRepresentation() {
+			try? data.write(to: url)
+		}
+		return url
+	}
+	
+	func drawCharacterSheet() -> UIImage {
+		let renderer = UIGraphicsImageRenderer(size: CGSize(width: 600, height: 800))
+		return renderer.image { ctx in
+			let text = """
+			Character Name: \(characterName)
+			Strength: \(strength)
+			Dexterity: \(dexterity)
+			Intelligence: \(intelligence)
+			Wisdom: \(wisdom)
+			Charisma: \(charisma)
+			"""
+			text.draw(at: CGPoint(x: 50, y: 50), withAttributes: [.font: UIFont.systemFont(ofSize: 18)])
 		}
 	}
 }
